@@ -1,0 +1,67 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: notification-service
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-group
+      auto-offset-reset: latest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: org.notificationservice.model.UserNotificationEvent
+        spring.json.trusted.packages: "*"
+  mail:
+    host: smtp.yandex.ru
+    port: 465
+    username: '{cipher}efa80c7293b91cfb71a0f2d7b36a1bdb85186433af5c72309e267a9f08a28c578efa50911af9ee0bc7e5154b84823c9e'
+    password: '{cipher}c36a04dbcfa525d4d053405096fa9926d11db84f0cac37a8b2d8adb5104b028bac3234972e636af9acd0037672b8c459'
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+          ssl:
+            enable: true
+            trust: "*"
+      mail.smtp.connectiontimeout: 5000
+      mail.smtp.timeout: 5000
+      mail.smtp.writetimeout: 5000
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        register: true
+        service-name: ${spring.application.name}
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${random.uuid}
+        instance-host: host.docker.internal
+        prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  health:
+    readiness-state:
+      enabled: true
+    liveness-state:
+      enabled: true
+
+app:
+  mail:
+    from: pilyaevapolina@yandex.ru
+
+kafka:
+  listener:
+    notification:
+      topic: user-events
+      group-id: notification-group
